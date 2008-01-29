@@ -1,7 +1,7 @@
 from pyglet import window, clock, font
 from pyglet.gl import * 
 
-def init_window():
+def init_window(w=800, h=600):
     # initially invisible so we can load fonts which require the window to be created beforehand.
 
     win = window.Window(visible=False)
@@ -9,12 +9,15 @@ def init_window():
 
     # Now we can load fonts
 
-    ft = font.load('Tahoma', 24) 
-    text = font.Text(ft, '', x=0, y=220)
+    ft = font.load('Tahoma', 24, bold=True) 
+    text = font.Text(ft, 'Testing..', halign=font.Text.CENTER)
 
-    win.set_size(800, 600)
+    win.set_size(w,h)
     win.set_visible(True)
     clock.set_fps_limit(30)
+
+    text.y = win.height - text.height
+    text.width = win.width
 
     # enable alpha-blending since some of our images are semi-transparent.
 

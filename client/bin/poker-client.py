@@ -44,11 +44,7 @@ test_hands = [
     ('Ac Jc Kc Tc Qc', 'royal flush'),                # test aces as high in straight flush (royal)
 ]
 
-def render_hand(h):
-    x, y = 20, win.height/2
-    for img in [get_card_image(c) for c in h.cards[0:7]]:
-        img.blit(x,y)
-        x += img.width
+TEST_DELAY=0.1
 
 test_hand_no=0
 def go_next_test_hand(dt):
@@ -59,15 +55,52 @@ def go_next_test_hand(dt):
     result = "PASS!"
     if actual_desc != expected_desc: 
         result = "FAIL!!"
-        clock.unschedule(go_next_test_hand) 
     text.text = "hand:%s\nactual:%s\nexpected:%s\n%s" % (hand_str, actual_desc, expected_desc, result)
     if test_hand_no + 1 == len(test_hands): 
         text.text = "ALL YOUR TESTS ARE BELONG TO US!"
-        clock.unschedule(go_next_test_hand) 
     else: 
         test_hand_no = test_hand_no + 1
-clock.schedule_interval(go_next_test_hand, 0.25) 
-go_next_test_hand(0)
+        clock.schedule_once(go_next_test_hand, TEST_DELAY) 
+clock.schedule_once(go_next_test_hand, TEST_DELAY) 
+
+FIRST,SECOND,SPLIT=range(3)
+
+def compare_hands(s1,s2,expected):
+    h1,h2=Hand.from_str(s1),Hand.from_str(s2)
+    if   expected == FIRST  and h1>h2:  result='OK'
+    elif expected == SPLIT  and h1==h2: result='OK'
+    elif expected == SECOND and h1<h2:  result='OK'
+    else: result='FAILED'
+    line = str(h1)+' vs '+str(h2)
+    line = '%-60s%s' % (line,result)
+    print line
+
+compare_hands('Ac Qd Jh 4c 2c', 'Qd Tc 4h 6s 9d', FIRST)
+compare_hands('Ac Qd Jh 4c 2c', 'Ad Tc 4h 6s 9d', FIRST)   # test kickers
+compare_hands('Ac Qd Jh 4c 2c', 'Ad 8c Qh Js 9d', SECOND)  # test kickers
+compare_hands('Ac Qd Jh 4c 2c', 'Ad Tc 4h As 9d', SECOND)
+compare_hands('2c 2d 4h 4c 8c', '2c 2d 4h 4c 8c', SPLIT)
+compare_hands('2c 2d 4h 4c 9c', '2c 2d 4h 4c 8c', FIRST)   # test kickers
+compare_hands('Ac Jc Kc Tc Qc', 'Ac Qd Jh 4c 2c', FIRST)   # royal flush beats everything
+compare_hands('Ac Jc Kc Tc Qc', 'Ac Ad 8h 7c Tc', FIRST)
+compare_hands('Ac Jc Kc Tc Qc', 'Ac Ad 8h 7c 7s', FIRST)
+compare_hands('Ac Jc Kc Tc Qc', '8c 8d 8h 7c Tc', FIRST)
+compare_hands('Ac Jc Kc Tc Qc', '8c 7d 6h 5c 4c', FIRST)
+compare_hands('Ac Jc Kc Tc Qc', 'Ac 2d 3h 4c 5c', FIRST)
+compare_hands('Ac Jc Kc Tc Qc', 'Ac Jd Kh Tc Qc', FIRST)
+compare_hands('Ac Jc Kc Tc Qc', '8c 6c 5c Qc Jc', FIRST)
+compare_hands('Ac Jc Kc Tc Qc', '8c 8d 8h 6d 6h', FIRST)
+compare_hands('Ac Jc Kc Tc Qc', 'Qc Qd Qh Qs 6h', FIRST)
+compare_hands('Ac Jc Kc Tc Qc', 'Ah 4h 2h 3h 5h', FIRST)
+compare_hands('Ac Jc Kc Tc Qc', 'Ac Jc Kc Tc Qc', SPLIT)
+compare_hands('9c 8d 7h 6c 5c', '8c 7d 6h 5c 4c', FIRST)   # high card in straights win
+compare_hands('9c 8c 7c 6c 5c', '8c 7c 6c 5c 4c', FIRST)   # high card in straight flushes win
+compare_hands('Jc Js Td Th Tc', 'Qc Qd Qh Qs 6h', SECOND)  # 4-kind beats full house
+compare_hands('Jc Js Jd Jh Tc', 'Qc Qd Qh Qs 6h', SECOND)  # higher rank in 4 of a kind wins
+compare_hands('Ac As Ad 6h 6c', 'Qc Qd Qh Ts Th', FIRST)   # higher rank in Fh wins
+compare_hands('Ac As Ad 6h 6c', 'Ac Ad Ah Ts Th', SECOND)  # higher rank in Fh wins
+compare_hands('Ac As Ad 6h 6c', 'Ac Ad Ah 6s 6h', SPLIT)
+compare_hands('6c Tc Qc 2c 9c', 'Kh 4h 9h Jh 8h', SECOND)  # high card in flush wins
 
 while not win.has_exit:
     win.dispatch_events()

@@ -8,14 +8,12 @@ RANK_NAME = ['two','three','four','five','six','seven','eight','nine','ten','jac
 SUIT_NAME = ['diamonds','hearts','clubs','spades']
 DIAMONDS, HEARTS, CLUBS, SPADES = range(4)
 
-from pprint import pprint
-
 def plural(r_str):
     """make a rank name plural"""
     if r_str == 'six': return r_str + 'es'
     return r_str + 's'
 
-class Card:
+class Card(object):
     """a playing card; e.g. ace of hearts, queen of spades, etc."""
 
     def __init__(self, val): 
@@ -32,42 +30,61 @@ class Card:
         """return long description of card; e.g. 'ace of clubs'"""
         return '%s of %s' % (RANK_NAME[self.rank], SUIT_NAME[self.suit])
 
+    @classmethod
+    def from_abbrev_str(cls, str):
+        """return Card instance from an abbreviated string representation of the card
+           such as 'Ac' or '3d'"""
+        r, s = str[0], str[1]
+
+        if r >= '2' and r <= '9': r = int(r)-2
+        elif r == 'A': r = ACE
+        elif r == 'T': r = TEN
+        elif r == 'J': r = JACK
+        elif r == 'Q': r = QUEEN
+        elif r == 'K': r = KING
+
+        if   s == 's': s = SPADES
+        elif s == 'c': s = CLUBS
+        elif s == 'd': s = DIAMONDS
+        elif s == 'h': s = HEARTS
+
+        return Card(s * 13 + r)
+
+    def abbrev_desc(self):
+        """returns a string containing an abbreviated version of the card such as 'Ac' or '3d'"""
+        return '%c%c' % (RANK_ABBR[self.rank], SUIT_ABBR[self.suit])
+
 class Hand:
     """holds a set of cards and can determine if they comprise various poker hands"""
 
     def __init__(self):
-        self.reset()
-
-    @classmethod
-    def from_str(cls, str):
-        h = Hand()
-
-        for c in str.split():
-            r,s = c[0],c[1]
-
-            if r >= '2' and r <= '9': r = int(r)-2
-            elif r == 'A': r = ACE
-            elif r == 'T': r = TEN
-            elif r == 'J': r = JACK
-            elif r == 'Q': r = QUEEN
-            elif r == 'K': r = KING
-
-            if s == 's': s = SPADES
-            elif s == 'c': s = CLUBS
-            elif s == 'd': s = DIAMONDS
-            elif s == 'h': s = HEARTS
-
-            h.add_card(Card(s*13+r))
-
-        return h
-
-    def reset(self):
-        """remove cards from hand"""
         self.cards = []
         self.dirty = False
         self.type = UNKNOWN
         self.ranks = []             # desc. order
         self.desc = ''
+
+    @classmethod
+    def random(cls,n=7):
+        """creates a random hand of N cards"""
+        deck = range(52)
+        random.shuffle(deck)
+        h = Hand()
+        for i in range(7): h.add_card(Card(deck.pop()))
+        return h
+
+    @classmethod
+    def from_abbrev_str(cls, str):
+        """Creates a hand from a string like 'Ad Th 3s 5c 7d 8d Qc'"""
+        h = Hand()
+        for c in [Card.from_abbrev_str(part) for part in str.split()]:
+            h.add_card(c)
+        return h
+
+    def abbrev_desc(self):
+        """returns a abbreviated string representation of the hand's cards as in 
+           'Ad Th 3s 5c 7d 8d Qc'"""
+        return ' '.join([c.abbrev_desc() for c in self.cards])
 
     def add_card(self, card):
         """adds a card to the hand. avoid accessing the cards directly"""
@@ -87,11 +104,11 @@ class Hand:
 
     def __cmp__(self, other):
         """compare hands following standard poker hand rankings, including kickers."""
-        if other == None: return 0
         type = self.get_type()
         other_type = other.get_type()
         n = cmp(type, other_type)
         if n != 0: return n
+        if self.ranks == other.ranks: return 0
         if self.ranks < other.ranks: return -1
         return 1
 
@@ -123,6 +140,19 @@ class Hand:
         self._find_twopair(r2c,s2c) or \
         self._find_pair(r2c,s2c) or \
         self._find_highcard(r2c,s2c)
+        return r2c, s2c
+
+    def _analysis_to_str(self):
+        r2c, s2c = self._analyze()
+        str = "r2c:\n"
+        for r in r2c:
+            str += '> %s: %s' % (RANK_ABBR[r], ' '.join([c.abbrev_desc() for c in r2c[r]]))
+            str += '\n'
+        str += "s2c:\n"
+        for s in s2c:
+            str += '> %s: %s' % (SUIT_ABBR[s], ' '.join([c.abbrev_desc() for c in s2c[s]]))
+            str += '\n'
+        return str
 
     def _largest_rank_with_n(self, r2c, n, ignore0 = -1, ignore1 = -1):
         """return the largest rank such that n cards have the rank"""
