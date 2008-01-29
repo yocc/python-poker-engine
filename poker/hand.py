@@ -1,58 +1,10 @@
 import random
+from card import Card
 
-UNKNOWN, HIGHCARD, PAIR, TWOPAIR, SET, STRAIGHT, FLUSH, FULLHOUSE, QUADS, STRAIGHTFLUSH = range(10)
-TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN, JACK, QUEEN, KING, ACE = range(13)
-RANK_ABBR = '23456789TJQKA'
-SUIT_ABBR = 'dhcs'
-RANK_NAME = ['two','three','four','five','six','seven','eight','nine','ten','jack','queen','king','ace']
-SUIT_NAME = ['diamonds','hearts','clubs','spades']
-DIAMONDS, HEARTS, CLUBS, SPADES = range(4)
-
-def plural(r_str):
-    """make a rank name plural"""
+def _plural(r_str):
+    """make a rank name _plural"""
     if r_str == 'six': return r_str + 'es'
     return r_str + 's'
-
-class Card(object):
-    """a playing card; e.g. ace of hearts, queen of spades, etc."""
-
-    def __init__(self, val): 
-        self.suit = val / 13
-        self.rank = val % 13
-
-    def __cmp__(self, other): 
-        return cmp(self.rank, other.rank)
-
-    def __str__(self): 
-        return RANK_ABBR[self.rank] + SUIT_ABBR[self.suit]
-
-    def get_desc(self):
-        """return long description of card; e.g. 'ace of clubs'"""
-        return '%s of %s' % (RANK_NAME[self.rank], SUIT_NAME[self.suit])
-
-    @classmethod
-    def from_abbrev_str(cls, str):
-        """return Card instance from an abbreviated string representation of the card
-           such as 'Ac' or '3d'"""
-        r, s = str[0], str[1]
-
-        if r >= '2' and r <= '9': r = int(r)-2
-        elif r == 'A': r = ACE
-        elif r == 'T': r = TEN
-        elif r == 'J': r = JACK
-        elif r == 'Q': r = QUEEN
-        elif r == 'K': r = KING
-
-        if   s == 's': s = SPADES
-        elif s == 'c': s = CLUBS
-        elif s == 'd': s = DIAMONDS
-        elif s == 'h': s = HEARTS
-
-        return Card(s * 13 + r)
-
-    def abbrev_desc(self):
-        """returns a string containing an abbreviated version of the card such as 'Ac' or '3d'"""
-        return '%c%c' % (RANK_ABBR[self.rank], SUIT_ABBR[self.suit])
 
 class Hand:
     """holds a set of cards and can determine if they comprise various poker hands"""
@@ -183,7 +135,7 @@ class Hand:
         if not r: return False
         self.type = QUADS
         self.ranks = [r,r,r,r] + self._find_kickers(1, r)
-        self.desc = 'four of a kind (%s)' % plural(RANK_NAME[r])
+        self.desc = 'four of a kind (%s)' % _plural(RANK_NAME[r])
         return True
 
     def _find_fullhouse(self,r2c,s2c): 
@@ -193,8 +145,8 @@ class Hand:
         if not pair_rank: return False
         self.type = FULLHOUSE
         self.ranks = [trip_rank, trip_rank, trip_rank, pair_rank, pair_rank]
-        self.desc = 'full house (%s over %s)' % (plural(RANK_NAME[max(trip_rank, pair_rank)]), 
-                                                 plural(RANK_NAME[min(trip_rank, pair_rank)]))
+        self.desc = 'full house (%s over %s)' % (_plural(RANK_NAME[max(trip_rank, pair_rank)]), 
+                                                 _plural(RANK_NAME[min(trip_rank, pair_rank)]))
         return True
 
     def _find_flush(self,r2c,s2c): 
@@ -232,7 +184,7 @@ class Hand:
         if not r: return False
         self.type = QUADS
         self.ranks = [r,r,r,r] + self._find_kickers(1, r)
-        self.desc = 'three of a kind (%s)' % plural(RANK_NAME[r])
+        self.desc = 'three of a kind (%s)' % _plural(RANK_NAME[r])
         return True
 
     def _find_twopair(self,r2c,s2c): 
@@ -243,7 +195,7 @@ class Hand:
         self.type = TWOPAIR
         min_r, max_r = (min(r0,r1), max(r0,r1))
         self.ranks = [max_r, max_r, min_r, min_r] + self._find_kickers(1, r0, r1)
-        self.desc = 'two pair (%s and %s)' % (plural(RANK_NAME[max_r]), plural(RANK_NAME[min_r]))
+        self.desc = 'two pair (%s and %s)' % (_plural(RANK_NAME[max_r]), _plural(RANK_NAME[min_r]))
         return True
 
     def _find_pair(self,r2c,s2c): 
@@ -251,7 +203,7 @@ class Hand:
         if not r: return False
         self.type = PAIR
         self.ranks = [r,r] + self._find_kickers(3, r)
-        self.desc = 'pair of %s' % plural(RANK_NAME[r])
+        self.desc = 'pair of %s' % _plural(RANK_NAME[r])
         return True
 
     def _find_highcard(self,r2c,s2c):
@@ -259,65 +211,3 @@ class Hand:
         self.ranks = self._find_kickers(5)
         self.desc = '%s-high' % RANK_NAME[self.ranks[0]]
         return True
-
-ACTION_FOLD, ACTION_BET, ACTION_CHECK = range(3)
-
-class Player:
-    def __init__(self, name):
-        self.name = name
-        self.chips = 0
-
-    def __str__(self):
-        return '%s (%d)' % (self.name, self.chips)
-
-EVENT_GAME_START        = 0
-EVENT_GAME_END          = 1
-EVENT_GAME_HAND_START   = 2
-EVENT_GAME_HAND_END     = 3
-EVENT_DEALT_FLOP        = 4 
-EVENT_DEALT_TURN        = 5 
-EVENT_DEALT_RIVER       = 6 
-EVENT_PLAYER_DEALT_HOLE = 7
-EVENT_PLAYER_WIN        = 8
-EVENT_PLAYER_LOSE       = 9
-EVENT_PLAYER_SITS       = 10
-EVENT_PLAYER_CHATS      = 11
-
-class Event:
-    def __init__(self, type, game):
-        self.type = type
-        self.game = game
-
-class Game:
-    def __init__(self):
-        self.deck = range(52)
-        self.players = {}
-        self.seats = {}
-        self.min_players = 2
-        self.max_players = 10
-        self.ante = 0
-        self.small_blind = 5
-        self.big_blind = 10
-        self.dealer = 0
-        self.community = []
-
-    def add_observer(self, obs):
-        self.observers[obs] = 1
-
-    def set_callbacks(self, action_cb, event_cb):
-        self.action_cb = action_cb
-        self.event_cb = event_cb
-
-    def join(self, player):
-        pass # TODO fail if no seats avail
-
-    def start(self):
-        pass # TODO fail if not enough players
-
-    def standings(self):
-        pass # TODO return players sorted by chips desc.
-
-    def _newhand(self):
-        self.deck = range(52)
-        random.shuffle(self.deck)
-
