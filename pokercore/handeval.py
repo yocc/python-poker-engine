@@ -38,6 +38,29 @@ class Hand:
     def __init__(self):
         self.reset()
 
+    @classmethod
+    def from_str(cls, str):
+        h = Hand()
+
+        for c in str.split():
+            r,s = c[0],c[1]
+
+            if r >= '2' and r <= '9': r = int(r)-2
+            elif r == 'A': r = ACE
+            elif r == 'T': r = TEN
+            elif r == 'J': r = JACK
+            elif r == 'Q': r = QUEEN
+            elif r == 'K': r = KING
+
+            if s == 's': s = SPADES
+            elif s == 'c': s = CLUBS
+            elif s == 'd': s = DIAMONDS
+            elif s == 'h': s = HEARTS
+
+            h.add_card(Card(s*13+r))
+
+        return h
+
     def reset(self):
         """remove cards from hand"""
         self.cards = []
