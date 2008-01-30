@@ -1,7 +1,7 @@
-resources/images/deck1.png
-resources/images/deck2.png
-resources/images/card_back_blue.png
-resources/images/card_back_red.png
+client/resources/images/deck1.png
+client/resources/images/deck2.png
+client/resources/images/card_back_blue.png
+client/resources/images/card_back_red.png
 
     Larry Ewing <lewing@isc.tamu.edu> created Tux using GIMP.
     Marshall Kirk McKusick <mckusick@mckusick.com> is the copyright holder and creator of the BSD Daemon image.
