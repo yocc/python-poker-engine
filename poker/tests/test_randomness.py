@@ -38,12 +38,15 @@ class RandomnessTestCase(unittest.TestCase):
 
         fudge = 5.0      # +/- fudge percentage points is OK ... TODO how to tune?
 
-        print 'generating stats on %d hands... please wait...' % hand_count
+        print 
+        print 'Generating stats on %d hands. Please wait.' % hand_count
+        print 'If you are running this test with code coverage stats gathering enabled,'
+        print 'it will take a while to complete.'
 
         for i in range(hand_count):
             h = Hand.random()
             stats[h.get_type()] += 1
-            if i % 10000 == 0: 
+            if i % 1000 == 0: 
                 print '.',
                 sys.stdout.flush()
 
