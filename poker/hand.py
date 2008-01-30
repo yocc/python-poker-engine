@@ -121,8 +121,8 @@ class Hand(object):
 
     # useful for debugging/testing.
 
-    def _analysis_to_str(self):
-        r2c, s2c = self._analyze()
+    def _analysis_to_str(self, r2c=None, s2c=None):
+        if not r2c: r2c, s2c = self._analyze() 
         s = "r2c:\n"
         for rank in r2c:
             s += '> %s: %s' % (RANK_ABBR[rank], ' '.join([str(c) for c in r2c[rank]]))
@@ -139,9 +139,9 @@ class Hand(object):
 
     def _largest_rank_with_n(self, r2c, n, ignore0 = -1, ignore1 = -1):
         for r in range(ACE, TWO-1, -1):
-            if r != ignore0 and r != ignore1 and len(r2c.get(r, [])) == n: return r
-            r = r - 1
-        return False
+            if r != ignore0 and r != ignore1 and len(r2c.get(r, [])) == n: 
+                return r
+        return -1
 
     # find n 'kicker' cards that do not have rank ignore1 nor ignore2.
 
@@ -154,8 +154,12 @@ class Hand(object):
 
     def _find_straightflush(self, r2c, s2c): 
         if not self._find_straight(r2c,s2c): return False
+        tally = [0,0,0,0]
         for s in range(4):
-            if len(s2c.get(s,[])) >= 5:
+            for r in self.ranks:
+                if len([c for c in r2c[r] if c.suit == s]) > 0:
+                    tally[s] += 1
+            if tally[s] >= 5:
                 self.type = STRAIGHTFLUSH
                 if self.ranks[0] == ACE: self.desc = 'royal flush'
                 else: self.desc = '%s-high straight flush' % RANK_NAME[self.ranks[0]]
@@ -164,7 +168,7 @@ class Hand(object):
 
     def _find_quads(self, r2c, s2c): 
         r = self._largest_rank_with_n(r2c, 4)
-        if not r: return False
+        if r == -1: return False
         self.type = QUADS
         self.ranks = [r,r,r,r] + self._kickers(1, r)
         self.desc = 'four of a kind (%s)' % _pluralize_rank(RANK_NAME[r])
@@ -172,9 +176,9 @@ class Hand(object):
 
     def _find_fullhouse(self, r2c, s2c): 
         trip_rank = self._largest_rank_with_n(r2c, 3)
-        if not trip_rank: return False
+        if trip_rank == -1: return False
         pair_rank = self._largest_rank_with_n(r2c, 2, trip_rank)
-        if not pair_rank: return False
+        if pair_rank == -1: return False
         self.type = FULLHOUSE
         self.ranks = [trip_rank, trip_rank, trip_rank, pair_rank, pair_rank]
         self.desc = 'full house (%s over %s)' % (_pluralize_rank(RANK_NAME[max(trip_rank, pair_rank)]), 
@@ -202,7 +206,7 @@ class Hand(object):
         found = False
         if n == 5:
             found = True
-            self.ranks = range(r + n - 1, r, -1)
+            self.ranks = range(r + n - 1, r - 1, -1)
         elif n == 4 and r < TWO and len(r2c.get(ACE, [])) > 0:
             self.ranks = [FIVE, FOUR, THREE, TWO, ACE]
             found = True
@@ -213,7 +217,7 @@ class Hand(object):
 
     def _find_set(self, r2c, s2c): 
         r = self._largest_rank_with_n(r2c, 3)
-        if not r: return False
+        if r == -1: return False
         self.type = SET
         self.ranks = [r,r,r] + self._kickers(2, r)
         self.desc = 'three of a kind (%s)' % _pluralize_rank(RANK_NAME[r])
@@ -221,9 +225,9 @@ class Hand(object):
 
     def _find_twopair(self, r2c, s2c): 
         r0 = self._largest_rank_with_n(r2c, 2)
-        if not r0: return False
+        if r0 == -1: return False
         r1 = self._largest_rank_with_n(r2c, 2, r0)
-        if not r1: return False
+        if r1 == -1: return False
         self.type = TWOPAIR
         min_r, max_r = (min(r0,r1), max(r0,r1))
         self.ranks = [max_r, max_r, min_r, min_r] + self._kickers(1, r0, r1)
@@ -233,7 +237,7 @@ class Hand(object):
 
     def _find_pair(self, r2c, s2c): 
         r = self._largest_rank_with_n(r2c, 2)
-        if not r: return False
+        if r == -1: return False
         self.type = PAIR
         self.ranks = [r,r] + self._kickers(3, r)
         self.desc = 'pair of %s' % _pluralize_rank(RANK_NAME[r])

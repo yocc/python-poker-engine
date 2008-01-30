@@ -14,7 +14,10 @@ test_hands = [
     ( '8c 8d 8h 6d 6h', FULLHOUSE,     'full house (eights over sixes)' ),
     ( 'Qc Qd Qh Qs 6h', QUADS,         'four of a kind (queens)'        ),
     ( 'Ah 4h 2h 3h 5h', STRAIGHTFLUSH, 'five-high straight flush'       ),
-    ( 'Ac Jc Kc Tc Qc', STRAIGHTFLUSH, 'royal flush'                    ) 
+    ( 'Ac Jc Kc Tc Qc', STRAIGHTFLUSH, 'royal flush'                    ),
+    ( "Ah 6d 4c 3s 2h 2s 2c",  SET, "three of a kind (twos)" ),
+    ( "Qs Js Tc 9s 8d 7s 3s",  FLUSH, "queen-high flush" ),
+    ( "Kc Qc 8c 7c 6s 5c 4s",  FLUSH, "king-high flush" ),
 
     # TODO please add a LOT more...
     # One idea would be to generate random hands along with what the hand 
@@ -30,8 +33,6 @@ class HandTestCase(unittest.TestCase):
 
     def runTest(self):
         self.test_hands()
-        self.test_hands
-        self.test_hands()
         self.test_invalid_hand_string_rep()
         self.test_random_hand()
         self.test_hand_comparisons()
@@ -41,11 +42,9 @@ class HandTestCase(unittest.TestCase):
         for entry in test_hands:
             card_str, type, desc = entry
             h = Hand.from_str(card_str)
-            #print card_str, ' vs ', str(h)
-            #print h._analysis_to_str()
-            self.assertEquals(str(h), card_str)
-            self.assertEquals(h.get_type(), type)
-            self.assertEquals(h.describe(), desc)
+            self.assertEquals(str(h), card_str,   msg = '%s: %s expected %s' % (card_str, str(h), card_str))
+            self.assertEquals(h.get_type(), type, msg = '%s: %s expected %s' % (card_str, TYPE_NAMES[h.get_type()], TYPE_NAMES[type]))
+            self.assertEquals(h.describe(), desc, msg = '%s: %s expected %s' % (card_str, h.describe(), desc))
 
     def test_invalid_hand_string_rep(self):
         self.assertRaises(CardFormatException, Hand.from_str, 'hi there')

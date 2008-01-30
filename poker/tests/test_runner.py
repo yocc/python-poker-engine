@@ -6,6 +6,8 @@ import test_card
 import test_hand
 import test_randomness
 
+import os
+
 if __name__ == '__main__':
     suite = TestSuite()
     suite.addTest(test_card.CardTestCase())
