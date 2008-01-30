@@ -13,8 +13,8 @@ class RandomnessTestCase(unittest.TestCase):
        http://en.wikipedia.org/wiki/Poker_probability#Frequency_of_7-card_poker_hands
     """
 
-    def test_randomness(self):
-        hand_count = 100000
+    def runTest(self):
+        hand_count = 1000
 
         stats = { HIGHCARD:0.0, 
                   PAIR:0.0, 
@@ -58,6 +58,3 @@ class RandomnessTestCase(unittest.TestCase):
         for x in stats:
             delta = math.fabs(probs[x] - stats[x])
             self.assertTrue(delta < fudge)
-
-if __name__ == '__main__':
-    unittest.main()

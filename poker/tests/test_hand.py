@@ -28,6 +28,15 @@ FIRST, SECOND, SPLIT = range(3)
 class HandTestCase(unittest.TestCase):
     """Tests the hand module"""
 
+    def runTest(self):
+        self.test_hands()
+        self.test_hands
+        self.test_hands()
+        self.test_invalid_hand_string_rep()
+        self.test_random_hand()
+        self.test_hand_comparisons()
+        self.test_internal_analysis_string()
+
     def test_hands(self):
         for entry in test_hands:
             card_str, type, desc = entry

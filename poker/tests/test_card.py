@@ -6,6 +6,14 @@ from poker.card import *
 class CardTestCase(unittest.TestCase):
     """Tests the card module"""
 
+    def runTest(self):
+        self.test_deck_init()
+        self.test_from_str()
+        self.test_invalid_from_str()
+        self.test_cmp()
+        self.test_to_str()
+        self.test_to_long_str()
+
     def test_deck_init(self):
         deck = range(52)
         for i in range(52):
@@ -65,8 +73,3 @@ class CardTestCase(unittest.TestCase):
         self.assertEquals(Card.from_str('Tc').describe(long_fmt=True), "ten of clubs")
         self.assertEquals(Card.from_str('2d').describe(long_fmt=True), "two of diamonds")
         self.assertEquals(Card.from_str('Qh').describe(long_fmt=True), "queen of hearts")
-
-
-if __name__ == '__main__':
-    unittest.main()
-
