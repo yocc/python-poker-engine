@@ -12,4 +12,4 @@ for i in range(n):
     deck = range(52)
     random.shuffle(deck)
     h = Hand.random()
-    print '( "%s", %s, "%s" )' % (str(h), TYPE_NAMES[h.get_type()], h.describe())
+    print '( "%s", %20s, "%s" )' % (str(h), TYPE_NAMES[h.get_type()], h.describe())

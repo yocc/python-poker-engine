@@ -5,6 +5,18 @@ from card import *
 HIGHCARD, PAIR, TWOPAIR, SET, STRAIGHT, \
 FLUSH, FULLHOUSE, QUADS, STRAIGHTFLUSH = range(9)
 
+TYPE_NAMES = {
+    HIGHCARD:      'HIGHCARD',
+    PAIR:          'PAIR',
+    TWOPAIR:       'TWOPAIR',
+    SET:           'SET',
+    STRAIGHT:      'STRAIGHT',
+    FLUSH:         'FLUSH',
+    FULLHOUSE:     'FULLHOUSE',
+    QUADS:         'QUADS',
+    STRAIGHTFLUSH: 'STRAIGHTFLUSH'
+}
+
 def _pluralize_rank(r_str):
     if r_str == 'six': return r_str + 'es'
     return r_str + 's'
@@ -32,7 +44,7 @@ class Hand(object):
         deck = range(52)
         random.shuffle(deck)
         h = Hand()
-        for i in range(7): h.add(Card(deck.pop()))
+        for card in [Card(c) for c in deck[0:7]]: h.add(card)
         return h
 
     @classmethod
@@ -42,6 +54,7 @@ class Hand(object):
         if len(parts) < 5: raise HandFormatException('>= 5 cards required')
         h = Hand()
         for c in parts: h.add(c)
+        h.dirty = True
         return h
 
     def add(self, card):
@@ -108,17 +121,6 @@ class Hand(object):
 
     # useful for debugging/testing.
 
-    def _typedesc(self):
-        if self.type == HIGHCARD:      return 'HIGHCARD'
-        if self.type == PAIR:          return 'PAIR'
-        if self.type == TWOPAIR:       return 'TWOPAIR'
-        if self.type == SET:           return 'SET'
-        if self.type == STRAIGHT:      return 'STRAIGHT'
-        if self.type == FLUSH:         return 'FLUSH'
-        if self.type == FULLHOUSE:     return 'FULLHOUSE'
-        if self.type == QUADS:         return 'QUADS'
-        if self.type == STRAIGHTFLUSH: return 'STRAIGHTFLUSH'
-
     def _analysis_to_str(self):
         r2c, s2c = self._analyze()
         s = "r2c:\n"
@@ -129,7 +131,7 @@ class Hand(object):
         for suit in s2c:
             s += '> %s: %s' % (SUIT_ABBR[suit], ' '.join([str(c) for c in s2c[suit]]))
             s += '\n'
-        s += 'type:%s\n' % self._typedesc()
+        s += 'type:%s\n' % TYPE_NAMES[self.type]
         s += 'ranks:%s\n' % ' '.join([RANK_ABBR[r] for r in self.ranks])
         return s
 
