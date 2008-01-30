@@ -1,7 +1,1 @@
-#!/bin/sh
-
-export PYTHONPATH=../..
-
-python test-card.py
-python test-hand.py
-python test-randomness.py
+PYTHONPATH=../.. trace2html.py -o /tmp -w poker -r python test_runner.py
