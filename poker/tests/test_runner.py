@@ -2,7 +2,9 @@
 
 from unittest import *
 
-import test_card, test_hand, test_randomness
+import test_card
+import test_hand
+import test_randomness
 
 if __name__ == '__main__':
     suite = TestSuite()

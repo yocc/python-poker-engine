@@ -55,46 +55,41 @@ class HandTestCase(unittest.TestCase):
         h = Hand.random()
         self.assertTrue(len(h.cards) == 7)
 
-    def _hand_wins(self, s1, s2, expected_winner):
+    def _winner(self, s1, s2):
         h1, h2 = Hand.from_str(s1), Hand.from_str(s2)
-        if   expected_winner == FIRST  and h1>h2:  return True
-        elif expected_winner == SPLIT  and h1==h2: return True
-        elif expected_winner == SECOND and h1<h2:  return True
-        return False
+        if h1 > h2: return FIRST
+        if h1 < h2: return SECOND
+        return SPLIT
 
     def test_hand_comparisons(self):
-        self.assertTrue(self._hand_wins('Ac Qd Jh 4c 2c', 'Qd Tc 4h 6s 9d', FIRST))
-        self.assertTrue(self._hand_wins('Ac Qd Jh 4c 2c', 'Ad Tc 4h 6s 9d', FIRST))  # test kickers
-        self.assertTrue(self._hand_wins('Ac Qd Jh 4c 2c', 'Ad 8c Qh Js 9d', SECOND)) # test kickers
-        self.assertTrue(self._hand_wins('Ac Qd Jh 4c 2c', 'Ad Tc 4h As 9d', SECOND))
-        self.assertTrue(self._hand_wins('2c 2d 4h 4c 8c', '2c 2d 4h 4c 8c', SPLIT))
-        self.assertTrue(self._hand_wins('2c 2d 4h 4c 9c', '2c 2d 4h 4c 8c', FIRST))  # test kickers
-        self.assertTrue(self._hand_wins('Ac Jc Kc Tc Qc', 'Ac Qd Jh 4c 2c', FIRST))  # royal flush beats everything
-        self.assertTrue(self._hand_wins('Ac Jc Kc Tc Qc', 'Ac Ad 8h 7c Tc', FIRST))
-        self.assertTrue(self._hand_wins('Ac Jc Kc Tc Qc', 'Ac Ad 8h 7c 7s', FIRST))
-        self.assertTrue(self._hand_wins('Ac Jc Kc Tc Qc', '8c 8d 8h 7c Tc', FIRST))
-        self.assertTrue(self._hand_wins('Ac Jc Kc Tc Qc', '8c 7d 6h 5c 4c', FIRST))
-        self.assertTrue(self._hand_wins('Ac Jc Kc Tc Qc', 'Ac 2d 3h 4c 5c', FIRST))
-        self.assertTrue(self._hand_wins('Ac Jc Kc Tc Qc', 'Ac Jd Kh Tc Qc', FIRST))
-        self.assertTrue(self._hand_wins('Ac Jc Kc Tc Qc', '8c 6c 5c Qc Jc', FIRST))
-        self.assertTrue(self._hand_wins('Ac Jc Kc Tc Qc', '8c 8d 8h 6d 6h', FIRST))
-        self.assertTrue(self._hand_wins('Ac Jc Kc Tc Qc', 'Qc Qd Qh Qs 6h', FIRST))
-        self.assertTrue(self._hand_wins('Ac Jc Kc Tc Qc', 'Ah 4h 2h 3h 5h', FIRST))
-        self.assertTrue(self._hand_wins('Ac Jc Kc Tc Qc', 'Ac Jc Kc Tc Qc', SPLIT))
-        self.assertTrue(self._hand_wins('9c 8d 7h 6c 5c', '8c 7d 6h 5c 4c', FIRST))  # high card in straights win
-        self.assertTrue(self._hand_wins('9c 8c 7c 6c 5c', '8c 7c 6c 5c 4c', FIRST))  # high card in straight flushes win
-        self.assertTrue(self._hand_wins('Jc Js Td Th Tc', 'Qc Qd Qh Qs 6h', SECOND)) # 4-kind beats full house
-        self.assertTrue(self._hand_wins('Jc Js Jd Jh Tc', 'Qc Qd Qh Qs 6h', SECOND)) # higher rank in 4 of a kind wins
-        self.assertTrue(self._hand_wins('Ac As Ad 6h 6c', 'Qc Qd Qh Ts Th', FIRST))  # higher rank in Fh wins
-        self.assertTrue(self._hand_wins('Ac As Ad 6h 6c', 'Ac Ad Ah Ts Th', SECOND)) # higher rank in Fh wins
-        self.assertTrue(self._hand_wins('Ac As Ad 6h 6c', 'Ac Ad Ah 6s 6h', SPLIT))
-        self.assertTrue(self._hand_wins('6c Tc Qc 2c 9c', 'Kh 4h 9h Jh 8h', SECOND)) # high card in flush wins
+        self.assertEquals(self._winner('Ac Qd Jh 4c 2c', 'Qd Tc 4h 6s 9d'), FIRST)
+        self.assertEquals(self._winner('Ac Qd Jh 4c 2c', 'Ad Tc 4h 6s 9d'), FIRST)  # test kickers
+        self.assertEquals(self._winner('Ac Qd Jh 4c 2c', 'Ad 8c Qh Js 9d'), SECOND) # test kickers
+        self.assertEquals(self._winner('Ac Qd Jh 4c 2c', 'Ad Tc 4h As 9d'), SECOND)
+        self.assertEquals(self._winner('2c 2d 4h 4c 8c', '2c 2d 4h 4c 8c'), SPLIT)
+        self.assertEquals(self._winner('2c 2d 4h 4c 9c', '2c 2d 4h 4c 8c'), FIRST)  # test kickers
+        self.assertEquals(self._winner('Ac Jc Kc Tc Qc', 'Ac Qd Jh 4c 2c'), FIRST)  # royal flush beats everything
+        self.assertEquals(self._winner('Ac Jc Kc Tc Qc', 'Ac Ad 8h 7c Tc'), FIRST)
+        self.assertEquals(self._winner('Ac Jc Kc Tc Qc', 'Ac Ad 8h 7c 7s'), FIRST)
+        self.assertEquals(self._winner('Ac Jc Kc Tc Qc', '8c 8d 8h 7c Tc'), FIRST)
+        self.assertEquals(self._winner('Ac Jc Kc Tc Qc', '8c 7d 6h 5c 4c'), FIRST)
+        self.assertEquals(self._winner('Ac Jc Kc Tc Qc', 'Ac 2d 3h 4c 5c'), FIRST)
+        self.assertEquals(self._winner('Ac Jc Kc Tc Qc', 'Ac Jd Kh Tc Qc'), FIRST)
+        self.assertEquals(self._winner('Ac Jc Kc Tc Qc', '8c 6c 5c Qc Jc'), FIRST)
+        self.assertEquals(self._winner('Ac Jc Kc Tc Qc', '8c 8d 8h 6d 6h'), FIRST)
+        self.assertEquals(self._winner('Ac Jc Kc Tc Qc', 'Qc Qd Qh Qs 6h'), FIRST)
+        self.assertEquals(self._winner('Ac Jc Kc Tc Qc', 'Ah 4h 2h 3h 5h'), FIRST)
+        self.assertEquals(self._winner('Ac Jc Kc Tc Qc', 'Ac Jc Kc Tc Qc'), SPLIT)
+        self.assertEquals(self._winner('9c 8d 7h 6c 5c', '8c 7d 6h 5c 4c'), FIRST)  # high card in straights win
+        self.assertEquals(self._winner('9c 8c 7c 6c 5c', '8c 7c 6c 5c 4c'), FIRST)  # high card in straight flushes win
+        self.assertEquals(self._winner('Jc Js Td Th Tc', 'Qc Qd Qh Qs 6h'), SECOND) # 4-kind beats full house
+        self.assertEquals(self._winner('Jc Js Jd Jh Tc', 'Qc Qd Qh Qs 6h'), SECOND) # higher rank in 4 of a kind wins
+        self.assertEquals(self._winner('Ac As Ad 6h 6c', 'Qc Qd Qh Ts Th'), FIRST)  # higher rank in Fh wins
+        self.assertEquals(self._winner('Ac As Ad 6h 6c', 'Ac Ad Ah Ts Th'), SECOND) # higher rank in Fh wins
+        self.assertEquals(self._winner('Ac As Ad 6h 6c', 'Ac Ad Ah 6s 6h'), SPLIT)
+        self.assertEquals(self._winner('6c Tc Qc 2c 9c', 'Kh 4h 9h Jh 8h'), SECOND) # high card in flush wins
 
     def test_internal_analysis_string(self):
         h = Hand.random()
         s = h._analysis_to_str()
         self.assertTrue(s != None)   # bah
-
-if __name__ == '__main__':
-    unittest.main()
-

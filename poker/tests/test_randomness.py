@@ -14,7 +14,7 @@ class RandomnessTestCase(unittest.TestCase):
     """
 
     def runTest(self):
-        hand_count = 1000
+        hand_count = 10000
 
         stats = { HIGHCARD:0.0, 
                   PAIR:0.0, 
