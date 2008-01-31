@@ -1,0 +1,158 @@
+This document is a braindump on how to implement multiplayer communications
+for the python poker engine project.
+
+First, our assumptions and goals:
+
+    * do not reinvent the wheel; reuse existing, proven technologies.
+    * poker information in network messages is quite small is size.
+    * we do not require real-time, extremely low-latency communications.
+
+The first technology that has come to mind is to use XMPP.  Why?
+
+    * encypted transport
+    * no need to write server, deal with sockets, etc.
+    * standardized
+    * Roster Management - ie. Friends lists
+    * Presence - who's online and what are they doing.
+    * User to User and Multi-User chat. It's an instant messenger service after all, right?
+    * Version checking. This isn't necessarily going to do everything you need,
+      but it's free and "in the box"
+    * Custom User data - save user settings to the server.
+    * Search - find other users or matches. You can add quite a bit of complexity to this
+      without writing any server code at all.
+    * Content filtering - each message can be scanned for naughty words.
+      SSL and a whole assortment of security features.
+    * Anybody who's spent any time on IRC knows that writing "bots" is easy. It's just
+      another "user" that happens to be a computer.
+
+Open design issues:
+
+    * Game server is a jabber server?
+    * How do users register and maintain profiles?
+        - Client game acts as Jabber client; does registration?
+    * How do we plug into the Jabber server to perform game refereeing?
+        - Custom commands?
+    * How would clients be notified of game events?
+        - pubsub with one publisher per game?  Just subscribe to that publisher node?
+            - does xmpppy support pubsub?
+        - use Multiuser Chat (MUC) instead?
+            - does xmpppy support pubsub?
+    * How do clients send player events to the game?
+    * How do clients see their friends?
+        - roster management
+
+The client requires a Python XMPP library (there are several available):
+
+    * xmpppy
+        - supports MUC? didn't see it...
+        - supports custom commands (JEP-0050)
+    * Twisted Words
+
+The player requires a Jabber account.
+
+    * The player uses their account to send messages to the game server account?
+    * The player uses their account in a MUC hosted on the poker jabber server?
+    * The poker client receives messages to the user's account.
+        - Perhaps this implies the use of a custom resource like:
+          user@domain/poker
+
+Do I need a Python-based server to run the manager code in Python?
+
+    NO.  See XEP-0114 (Jabber [external] Component Protocol).  
+
+    Such components should work with ANY jabber server implementation.
+
+    The game server is thus an external Jabber component that talks to the 
+    Jabber server using a wire protocol.
+
+        - the game component registers a JID with some jabberd instance.
+        - the jabberd instance sends the components messages targeted to that JID.
+
+    External components use a shared secret with the Jabber server to authenticate.
+
+    I suppose that these components will use a XMPP library too... 
+
+What jabber server do we want to use?
+
+    * Can I hook the custom command handler into the server at brianhammond.com?
+
+    * ejabberd seems best; free and scalable
+        - written in erlang
+        - thousands of users per node
+        - clusters of nodes supported
+        - supports MUC
+        - supports SASL, TLS, and SSL
+        - supports pubsub
+        - web admin
+
+The "obvious choice" for sending game actions is through MUC.
+
+    ... but lots of details needed.
+
+    Idea: use a referee bot that just sits in the room ...
+
+One option is to use pubsub (publisher-subscriber) [1] in several places:
+
+    * each game is a publisher/syndicator of game events (cards dealt, player X bets $5, etc.)
+    * each client is a subscriber to the game node
+    * clients can subscribe to a "server information" node
+        - items like games available, player status, etc.
+
+Another option is to send messages to the GAME (a virtual Jabber user?) and have the game
+send messages to each player... But that sounds like pubsub.
+
+Does the game manager also subscribe to the game node and publish its own events?
+
+    * it could act as a "priveleged entity"
+
+Is it possible to distribute the games across many jabber servers ala load-balancing?
+
+    YES.  At least with ejabberd.
+
+Idea: use service discovery (aka DISCO) to determine the list of games in progress!
+
+Idea: use MUC for in-game chatting... Would need to associate a MUC with a game then.
+
+There's mention of being able to STORE the games given support for pubsub.... Hmm.
+
+Networking issues in general for multiplayer games:
+
+    1.  brain-dead simple but secure authentication
+    2.  messaging
+        a. between players
+        b. between teams
+        c. between your application and the players
+        d. lobby chat
+    3.  game hosting - either peer to peer or with dedicated "game servers" and the NAT issues
+        involved with connecting players
+    4.  matchmaking
+    5.  content-filtering of all those naughty words
+    6.  saving server-side data to prevent cheating and to allow users the ability to switch between
+        computers without losing their data
+    7.  friend management
+    8.  presence information so you can tell who's online
+    9.  leaderboards
+    10. online tournaments
+    11. bots/AI 12. voice and/or video chat
+    13. versioning - or rather, ensuring that your users are running the latest version.
+    14. and of course - when the game becomes a huge success, load balancing, distributed servers, hosting, etc.
+
+XMPP.net has a free certificate authority for signing TLS certificates.
+
+
+The Jabber network is decentralized; anyone can run their own server.
+
+Each user has a unique Jabber ID (JID) across the whole network.
+
+    - JIDs resemble email addresses (user@domain/resource)
+    - No need for centralized list of IDs
+
+
+[1] http://www.xmpp.org/extensions/xep-0060.html
+
+
+Other notes:
+
+* jingle is a real-time protocol for Jabber (think video chat) that can be used for FPS-like games
+  that require low-latency.
+

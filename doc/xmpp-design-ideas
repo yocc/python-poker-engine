@@ -1,0 +1,27 @@
+Assume we use XMPP/Jabber for communications/networking/multiplayer-support.
+
+We need a Jabber server that supports Multi-User Chat (MUC).
+
+ejabberd is one such server.
+
+The easiest thing to do would be to:
+
+- create a new MUC per poker table 
+- create a "referee bot" that administers the MUC
+- the client sends actions on behalf of the players as messages to the MUC
+- the referee bot takes these actions and updates the state of the game
+- the referee bot sends messages to the clients in the MUC with game events as they happen
+- clients receive these messages and update the user interface on the client to match
+- the referee sends a private message to each client for dealing hole cards
+
+
+there's some concern [1] about using MUC for everything however.
+
+review [2] as well ...
+
+more later... 
+
+
+[1] http://mail.jabber.org/pipermail/standards/2006-October/012775.html
+[2] http://mail.jabber.org/pipermail/standards/2006-October/012818.html
+
