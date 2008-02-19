@@ -1,27 +1,49 @@
-Assume we use XMPP/Jabber for communications/networking/multiplayer-support.
+Using Jabber/XMPP for networking/communications infrastructure.
 
-We need a Jabber server that supports Multi-User Chat (MUC).
+We will likely use
+    ejabberd for the Jabber server.
+    xmpppy for the XMPP client code.
+    xmpppy for the poker Jabber component code.
 
-ejabberd is one such server.
+We create a custom accept (TCP) external component 
+    Such components have a JID like other Jabber entities.
+    The component uses a TCP socket to communicate with the server.
 
-The easiest thing to do would be to:
+JID structure
 
-- create a new MUC per poker table 
-- create a "referee bot" that administers the MUC
-- the client sends actions on behalf of the players as messages to the MUC
-- the referee bot takes these actions and updates the state of the game
-- the referee bot sends messages to the clients in the MUC with game events as they happen
-- clients receive these messages and update the user interface on the client to match
-- the referee sends a private message to each client for dealing hole cards
+    jabber server on x.com; component id is poker.x.com
 
+    gameid@poker.x.com
+        where gameid is some unique ID
 
-there's some concern [1] about using MUC for everything however.
+    gameid@poker.x.com/playerid
+        where playerid is SHA-1 of the player's JID
 
-review [2] as well ...
+    gameid@poker.x.com/referee
+        Players send game actions to the referee in an <iq>.
+        If valid, the refree posts a message in a MUC for the game.
+        If invalid, player gets iq error.
+        Thus, for valid actions: PLAYER -> REFEREE -> MUC -> OTHER PLAYERS
 
-more later... 
+MUC messages
 
+    <thread> for gameid?
 
-[1] http://mail.jabber.org/pipermail/standards/2006-October/012775.html
-[2] http://mail.jabber.org/pipermail/standards/2006-October/012818.html
+Q: I suppose we will have a predefined number of games/tables active at
+   any given time.  When one game ends another is spawned in its place.
+   This way it's not up to users to create tables.  I suppose it'd be
+   useful to define tourneys though.
 
+Q: do users need to register with the site first?
+   or can they use iq register to register before playing?
+
+Q: how does one create a component in xmpppy?  what are xmpppy's custom 
+   commands all about?
+
+Q: can we use disco (service discovery) to determine available 
+   games one can play?
+
+Q: what about using pubsub instead?
+    I don't think XMPPPY support this.
+    How would you structure the messages?
+    use pubsub to list avail games
